@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="keywords" content="黄色网站" />
+  <title>黄色网站</title>
+</head>
+<body bgcolor="yellow">
+  <div id="app">
+    <h1 style="margin:15px auto;text-align:center;">黄色网站</h1>
+    <div class="block" style="margin:15px auto;width: 1080px;text-align:center;">
+    <div id="mydraw" style="width:1080;height:1080px;margin:15px auto;">
+    </div>
+    </div>
+  </div>
+    <script src="https://cdn.bootcss.com/svg.js/2.7.1/svg.min.js"></script>
+    <script src="svg.easing.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+      const draw_w=980
+      const draw_h=720
+      function hsv2rgb(h,s,v) 
+      {
+        let f= (n,k=(n+h/60)%6) => v - v*s*Math.max( Math.min(k,4-k,1), 0);
+        return "rgb("+Math.floor(f(5)*255)+","+Math.floor(f(3)*255)+","+Math.floor(f(1)*255)+")";
+      }
+      var linear=function(a0,a1,k){
+        return k*(a1-a0)+a0
+      }
+      var getRandomColor = function(v){
+        return hsv2rgb(Math.random()*255,1,v);
+      }
+      SVG.on(document, 'DOMContentLoaded', function() {
+      var mydraw = SVG('mydraw').size(draw_w, draw_h)
+      var rect = mydraw.rect(draw_w, draw_h).attr({ fill: 'yellow' })
+      var circle=[]
+      var circleB=[]
+      var line=[]
+      const num = 9
+      const radio = 13
+      for (var i = num - 1; i >= 0; i--) {
+        circleB.push(mydraw.circle(radio*1.4)
+          .attr({ cx: 0.5*draw_w, cy: 0.5*draw_h })
+          .attr({fill:'#00000055'}))
+      }
+      for (var i = num - 2; i >= 0; i--) {
+        line.push(mydraw.polyline(0.5*draw_w+','+0.5*draw_h+' '+(3+Math.random()*(draw_w-radio))+','+(3+Math.random()*(draw_h-radio)))
+          .attr({stroke:'#33323433'})
+          .fill('none')
+          .stroke({ width: 2 }))
+      }
+      for (var i = num - 1; i >= 0; i--) {
+        var rc=getRandomColor(1)
+        circle.push(mydraw.circle(radio)
+          .attr({ cx: 0.5*draw_w, cy: 0.5*draw_h })
+          .attr({fill:rc}))
+      }
+      // animate
+      var pos=[]
+      updateC=function(x){
+        var rx=radio+Math.random()*(draw_w-radio*2)
+        var ry=radio+Math.random()*(draw_h-radio*2)
+        pos[x]={x:rx,y:ry,x0:circle[x].cx(),y0:circle[x].cy()}
+        // console.log(x,pos[x])
+        circle[x].animate(500).attr({ fill: getRandomColor(1) }).animate(1800,'elastic',1500).center(pos[x].x, pos[x].y)
+        .during(function(px, morph, eased, situation) {
+          circleB[x].center(circle[x].cx(),circle[x].cy())
+          if(x>0){
+            // console.log(x,pos[x],eased)
+            // line[x-1].plot([[linear(pos[x-1].x0,pos[x-1].x,eased),linear(pos[x-1].y0,pos[x-1].y,eased)]
+            //   ,[linear(pos[x].x0,pos[x].x,eased),linear(pos[x].y0,pos[x].y,eased)]])
+            line[x-1].plot([[circle[x-1].cx(),circle[x-1].cy()]
+              ,[circle[x].cx(),circle[x].cy()]])
+          }
+        })
+        .after(function(situation) {
+            updateC(x)
+        })
+      }
+      update=function(){
+        for (var i = num - 1; i >= 0; i--) {
+          updateC(i)
+        }
+      }
+      update()
+      })
+    </script>
+</body>
+
+</html>
